@@ -32,6 +32,11 @@ public class RegistrationController {
         if(dto.getEmail().isEmpty() && dto.getPassword().isEmpty()){
             return new ResponseEntity<>("Tidak berhasil mendaftar", HttpStatusCode.valueOf(400));
         }
+
+        if(registrationService.findSameEmail(dto.getEmail())){
+            return new ResponseEntity<>("Email sudah terdaftar", HttpStatusCode.valueOf(400));
+        }
+
         var users = registrationService.registration(dto.getEmail(), dto.getPassword());
         var employee = employeeService.saveEmployee(users);
         log.info("Data employee: {}", employee);
