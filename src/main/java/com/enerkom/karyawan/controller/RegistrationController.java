@@ -66,6 +66,9 @@ public class RegistrationController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authDto.getEmail(), authDto.getPassword())
             );
+            log.info("Otoritas dalam user: {}", authentication.getAuthorities());
+            log.info("Principal dalam user: {}", authentication.getPrincipal());
+
             if (!authentication.isAuthenticated()){
                 log.info("Gagal login");
             }
