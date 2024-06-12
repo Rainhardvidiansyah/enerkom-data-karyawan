@@ -12,10 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/enerkom")
-public class RegistrationController {
+@RequestMapping("/api/v1/enerkom/auth")
+public class AuthenticationController {
 
-    private static final Logger log = LoggerFactory.getLogger(RegistrationController.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
     @Autowired
     private RegistrationService registrationService;
