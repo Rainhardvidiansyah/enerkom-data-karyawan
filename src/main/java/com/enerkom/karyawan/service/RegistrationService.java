@@ -46,4 +46,8 @@ public class RegistrationService {
         return userRepository.save(users);
     }
 
+    public boolean findSameEmail(String email){
+        return this.userRepository.getUserByEmail(email).isPresent();
+    }
+
 }
