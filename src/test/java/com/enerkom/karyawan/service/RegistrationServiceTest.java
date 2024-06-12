@@ -14,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,5 +55,23 @@ class RegistrationServiceTest {
 
         System.out.println(user.getRoles());
         Mockito.verify(userRepository).save(any(Users.class));
+    }
+
+    @Test
+    void findSameEmail() {
+        var user = new Users();
+        user.setEmail("rainhard@email.com");
+
+        Mockito.when(userRepository.getUserByEmail("rainhard@email.com"))
+                .thenReturn(Optional.of(user));
+
+        Boolean service = registrationService.findSameEmail("rainhard@email.com");
+
+        assertEquals(true, service);
+        assertNotNull(service);
+
+
+        Mockito.verify(userRepository).getUserByEmail("rainhard@email.com");
+
     }
 }
