@@ -7,6 +7,7 @@ import com.enerkom.karyawan.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -23,6 +24,9 @@ public class RegistrationService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
 
@@ -41,7 +45,7 @@ public class RegistrationService {
     public Users registration(String email, String password){
         Users users = new Users();
         users.setEmail(email);
-        users.setPassword(password);
+        users.setPassword(passwordEncoder.encode(password));
         users.setRoles(this.getRoles());
         return userRepository.save(users);
     }
