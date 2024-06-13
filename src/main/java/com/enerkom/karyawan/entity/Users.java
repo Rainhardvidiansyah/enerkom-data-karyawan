@@ -1,15 +1,17 @@
 package com.enerkom.karyawan.entity;
 
 import jakarta.persistence.*;
+import lombok.ToString;
 
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@ToString
 public class Users {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     private Long id;
 
