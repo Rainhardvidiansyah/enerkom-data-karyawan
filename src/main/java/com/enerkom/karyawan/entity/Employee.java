@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +33,9 @@ public class Employee {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    private List<Job> pekerjaan;
 
     public Employee(){
         this.registrationNumber = UUID.randomUUID();
@@ -96,5 +100,13 @@ public class Employee {
 
     public void setUsers(Users users) {
         this.users = users;
+    }
+
+    public List<Job> getPekerjaan() {
+        return pekerjaan;
+    }
+
+    public void setPekerjaan(List<Job> pekerjaan) {
+        this.pekerjaan = pekerjaan;
     }
 }
