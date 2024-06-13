@@ -46,7 +46,6 @@ public class RegistrationService {
         Users users = new Users();
         users.setEmail(email);
         users.setPassword(passwordEncoder.encode(password));
-        users.setRoles(this.getRoles());
         return userRepository.save(users);
     }
 
