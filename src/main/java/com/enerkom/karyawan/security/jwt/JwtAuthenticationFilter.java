@@ -51,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
+            final Long id = jwtService.extractUserId(jwt);
 
             logger.info("Extracted Username from JWT: {}", userEmail);
 
@@ -67,6 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } else {
                     logger.info("JWT token is not valid");
                 }
+                request.setAttribute("id", id);
             }
 
             filterChain.doFilter(request, response);

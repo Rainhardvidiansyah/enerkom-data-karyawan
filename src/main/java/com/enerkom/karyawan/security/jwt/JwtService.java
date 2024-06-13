@@ -1,5 +1,6 @@
 package com.enerkom.karyawan.security.jwt;
 
+import com.enerkom.karyawan.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -49,6 +50,7 @@ public class JwtService {
     }
 
     public String buildToken(Map<String, Object> extraClaim, UserDetails userDetails, Long expiration){
+        extraClaim.put("id", ((UserDetailsImpl) userDetails).id());
         return
                 Jwts.builder()
                         .setClaims(extraClaim)
@@ -57,6 +59,10 @@ public class JwtService {
                         .setExpiration(new Date(System.currentTimeMillis() + expiration))
                         .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                         .compact();
+    }
+
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("id", Long.class);
     }
 
 
