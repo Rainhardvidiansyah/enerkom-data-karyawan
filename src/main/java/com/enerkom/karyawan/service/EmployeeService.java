@@ -6,6 +6,8 @@ import com.enerkom.karyawan.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class EmployeeService {
 
@@ -17,5 +19,9 @@ public class EmployeeService {
         employee.setUsers(users);
 
         return this.employeeRepository.save(employee);
+    }
+
+    public Optional<Employee> findEmployeeById(Long id){
+        return this.employeeRepository.findById(id);
     }
 }
