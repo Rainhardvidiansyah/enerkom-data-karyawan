@@ -22,8 +22,6 @@ public class Roles {
     @Column(name = "role_name")
     private String roleName;
 
-    @ManyToMany(mappedBy = "roles")
-    private Set<Users> users;
     @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -67,11 +65,5 @@ public class Roles {
         this.updateAt = updateAt;
     }
 
-    public Set<Users> getUsers() {
-        return this.users;
-    }
 
-    public void setUsers(Set<Users> users) {
-        this.users = users;
-    }
 }
