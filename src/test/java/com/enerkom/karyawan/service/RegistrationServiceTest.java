@@ -80,7 +80,7 @@ class RegistrationServiceTest {
         var role = new Roles();
         role.setRoleName(ERole.ROLE_EMPLOYEE);
 
-        Mockito.when(roleRepository.findRolesByERole(ERole.ROLE_EMPLOYEE)).thenReturn(Optional.of(role));
+        Mockito.when(roleRepository.findRolesByERole(ERole.ROLE_EMPLOYEE.name())).thenReturn(Optional.of(role));
 
         List<Roles> roleService = registrationService.role();
 
@@ -89,7 +89,7 @@ class RegistrationServiceTest {
 
         System.out.println(roleService);
 
-        Mockito.verify(roleRepository).findRolesByERole(ERole.ROLE_EMPLOYEE);
+        Mockito.verify(roleRepository).findRolesByERole(ERole.ROLE_EMPLOYEE.name());
 
 
     }
