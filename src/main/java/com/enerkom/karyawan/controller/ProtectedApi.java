@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProtectedApi {
 
     @GetMapping("/")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     public String getProtectedApi(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return "halo " + authentication.getName();
