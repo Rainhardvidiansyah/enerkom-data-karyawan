@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 class RegistrationServiceTest {
@@ -32,6 +35,9 @@ class RegistrationServiceTest {
     @Mock
     private RoleRepository roleRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     void setup(){
         MockitoAnnotations.openMocks(this);
     }
@@ -44,16 +50,16 @@ class RegistrationServiceTest {
         user.setEmail("rainhard@email");
         user.setEmployee(new Employee());
         user.setPassword("password");
-        Set<Roles> role = new HashSet<Roles>();
-        user.setRoles(role);
 
+        Mockito.when(passwordEncoder.encode(anyString())).thenReturn("password");
         Mockito.when(userRepository.save(any(Users.class))).thenReturn(user);
 
         Users registration = registrationService.registration("rainhard@email", "password");
 
         assertNotNull(registration);
+        assertEquals("password", user.getPassword());
+        System.out.println(user.getPassword());
 
-        System.out.println(user.getRoles());
         Mockito.verify(userRepository).save(any(Users.class));
     }
 
