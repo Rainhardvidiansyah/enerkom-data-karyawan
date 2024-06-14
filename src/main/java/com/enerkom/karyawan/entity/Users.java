@@ -3,6 +3,8 @@ package com.enerkom.karyawan.entity;
 import jakarta.persistence.*;
 import lombok.ToString;
 
+import java.util.List;
+
 
 
 @Entity
@@ -19,6 +21,13 @@ public class Users {
 
     private String password;
 
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private List<Roles> roles;
     @OneToOne(mappedBy = "users")
     private Employee employee;
 
@@ -55,4 +64,11 @@ public class Users {
         this.employee = employee;
     }
 
+    public List<Roles> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Roles> roles) {
+        this.roles = roles;
+    }
 }
