@@ -37,9 +37,11 @@ public class RegistrationService {
 
         List<Roles> roles = new ArrayList<>();
 
-        Optional<Roles> optional = this.roleRepository.findRolesByERole(ERole.ROLE_EMPLOYEE.name());
+        Optional<Roles> roleUser = this.roleRepository.findRolesByERole(ERole.ROLE_EMPLOYEE.name());
+        if(roleUser.isPresent()){
+            roles.add(roleUser.get());
+        }
 
-        roles.add(optional.get());
         return roles;
     }
 
