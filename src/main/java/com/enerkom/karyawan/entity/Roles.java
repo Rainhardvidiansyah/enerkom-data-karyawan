@@ -1,12 +1,14 @@
 package com.enerkom.karyawan.entity;
 
 
+import com.enerkom.karyawan.enums.ERole;
 import jakarta.persistence.*;
 import lombok.ToString;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -18,9 +20,12 @@ public class Roles {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    public List<Users> users;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role_name")
-    private String roleName;
+    private ERole roleName;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -41,11 +46,19 @@ public class Roles {
         this.id = id;
     }
 
-    public String getRoleName() {
+    public List<Users> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<Users> users) {
+        this.users = users;
+    }
+
+    public ERole getRoleName() {
         return roleName;
     }
 
-    public void setRoleName(String roleName) {
+    public void setRoleName(ERole roleName) {
         this.roleName = roleName;
     }
 

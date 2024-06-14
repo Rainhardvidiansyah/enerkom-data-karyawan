@@ -35,6 +35,7 @@ public class Employee {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<Job> pekerjaan;
 
     public Employee(){

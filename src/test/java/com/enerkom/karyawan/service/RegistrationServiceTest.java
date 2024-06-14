@@ -3,6 +3,7 @@ package com.enerkom.karyawan.service;
 import com.enerkom.karyawan.entity.Employee;
 import com.enerkom.karyawan.entity.Roles;
 import com.enerkom.karyawan.entity.Users;
+import com.enerkom.karyawan.enums.ERole;
 import com.enerkom.karyawan.repository.RoleRepository;
 import com.enerkom.karyawan.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -12,16 +13,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class RegistrationServiceTest {
@@ -35,9 +31,6 @@ class RegistrationServiceTest {
     @Mock
     private RoleRepository roleRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     void setup(){
         MockitoAnnotations.openMocks(this);
     }
@@ -50,16 +43,16 @@ class RegistrationServiceTest {
         user.setEmail("rainhard@email");
         user.setEmployee(new Employee());
         user.setPassword("password");
+        List<Roles> role = new ArrayList<>();
+        user.setRoles(role);
 
-        Mockito.when(passwordEncoder.encode(anyString())).thenReturn("password");
         Mockito.when(userRepository.save(any(Users.class))).thenReturn(user);
 
         Users registration = registrationService.registration("rainhard@email", "password");
 
         assertNotNull(registration);
-        assertEquals("password", user.getPassword());
-        System.out.println(user.getPassword());
 
+        System.out.println(user.getRoles());
         Mockito.verify(userRepository).save(any(Users.class));
     }
 
@@ -78,6 +71,26 @@ class RegistrationServiceTest {
 
 
         Mockito.verify(userRepository).getUserByEmail("rainhard@email.com");
+
+    }
+
+    @Test
+    void role() {
+
+        var role = new Roles();
+        role.setRoleName(ERole.ROLE_EMPLOYEE);
+
+        Mockito.when(roleRepository.findRolesByERole(ERole.ROLE_EMPLOYEE.name())).thenReturn(Optional.of(role));
+
+        List<Roles> roleService = registrationService.role();
+
+        assertNotNull(roleService);
+        assertEquals(ERole.ROLE_EMPLOYEE, roleService.get(0).getRoleName());
+
+        System.out.println(roleService);
+
+        Mockito.verify(roleRepository).findRolesByERole(ERole.ROLE_EMPLOYEE.name());
+
 
     }
 }
