@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.*;
 
@@ -31,6 +32,9 @@ class RegistrationServiceTest {
     @Mock
     private RoleRepository roleRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     void setup(){
         MockitoAnnotations.openMocks(this);
     }
@@ -38,13 +42,20 @@ class RegistrationServiceTest {
     @Test
     void registration() {
 
+        Roles roles = new Roles();
+        roles.setRoleName(ERole.ROLE_EMPLOYEE);
+
         var user = new Users();
         user.setId(1L);
         user.setEmail("rainhard@email");
         user.setEmployee(new Employee());
         user.setPassword("password");
+
         List<Roles> role = new ArrayList<>();
+        role.add(roles);
         user.setRoles(role);
+
+        Mockito.when(passwordEncoder.encode(anyString())).thenReturn("password");
 
         Mockito.when(userRepository.save(any(Users.class))).thenReturn(user);
 
