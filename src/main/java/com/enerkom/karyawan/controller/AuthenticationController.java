@@ -6,13 +6,12 @@ import com.enerkom.karyawan.dto.RegistrationDto;
 import com.enerkom.karyawan.security.jwt.JwtService;
 import com.enerkom.karyawan.service.EmployeeService;
 import com.enerkom.karyawan.service.RegistrationService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,35 +65,64 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthDto authDto){
-        try{
+    public ResponseEntity<?> login(@RequestBody AuthDto authDto, HttpServletResponse response) {
+        try {
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authDto.getEmail(), authDto.getPassword())
             );
-            log.info("Otoritas dalam user: {}", authentication.getAuthorities());
-            log.info("Principal dalam user: {}", authentication.getPrincipal());
 
-            if (!authentication.isAuthenticated()){
-                log.info("Gagal login");
+            log.info("Otoritas dalam user: {}", authentication.getAuthorities());
+
+            if (!authentication.isAuthenticated()) {
+
+                log.info("Gagal login", authentication);
+                return new ResponseEntity<>("Gagal login", HttpStatus.UNAUTHORIZED);
+
+            } else {
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+                String accessToken = jwtService.generateToken(userDetails);
+
+                ResponseCookie responseCookie = ResponseCookie.from("accessToken", accessToken)
+                        .httpOnly(true)
+                        .secure(false)
+                        .path("/")
+                        .maxAge(Duration.ofSeconds(360000))
+                        .build();
+
+                List<String> roles = authentication.getAuthorities()
+                        .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+                var authResponseDto = new AuthResponseDto(userDetails.getUsername(), accessToken, roles);
+
+                log.info("Access token adalah: {}", accessToken);
+
+                response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+                return new ResponseEntity<>(authResponseDto, HttpStatusCode.valueOf(200));
             }
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-            String token = jwtService.generateToken(userDetails);
-
-            List<String> roles = authentication.getAuthorities()
-                    .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-
-            var response = new AuthResponseDto(userDetails.getUsername(), token, roles);
-
-            return new ResponseEntity<>(response, HttpStatusCode.valueOf(200));
-        }
-        catch (BadCredentialsException e){
+        } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("password atau email salah");
         }
 
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logOut(HttpServletResponse response){
+        ResponseCookie responseCookie = ResponseCookie.from("accessToken", "")
+               .httpOnly(true)
+               .secure(false)
+               .path("/")
+               .maxAge(Duration.ZERO)
+               .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+        return new ResponseEntity<>("Berhasil logout", HttpStatusCode.valueOf(200));
     }
 
 
