@@ -31,6 +31,9 @@ public class JwtService {
     @Value("${jwt.expiration.date}")
     private Long jwtExpiration;
 
+    @Value("${jwt.cookie.expiry}")
+    private int cookieExpiry;
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -46,17 +49,18 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        return buildToken(extraClaims, userDetails.getUsername());
     }
 
-    public String buildToken(Map<String, Object> extraClaim, UserDetails userDetails, Long expiration){
-        extraClaim.put("id", ((UserDetailsImpl) userDetails).id());
+    public String buildToken(Map<String, Object> extraClaim, String userName){
+        Date date = new Date();
+        Date expirationDate = new Date(date.getTime() + cookieExpiry * 1000L);
         return
                 Jwts.builder()
                         .setClaims(extraClaim)
-                        .setSubject(userDetails.getUsername())
+                        .setSubject(userName)
                         .setIssuedAt(new Date(System.currentTimeMillis()))
-                        .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                        .setExpiration(expirationDate)
                         .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                         .compact();
     }
@@ -64,6 +68,7 @@ public class JwtService {
     public Long extractUserId(String token) {
         return extractAllClaims(token).get("id", Long.class);
     }
+
 
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
