@@ -35,7 +35,7 @@ public class JobController {
     private EmployeeService employeeService;
 
     @GetMapping("/")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity<?> getAllJob(){
 
         List<Job> jobs = this.jobService.getAllJob();
@@ -48,7 +48,7 @@ public class JobController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity<?> getOneJobByName(@RequestParam String jobName){
         var job = this.jobService.getOneJobByName(jobName);
         if(job ==  null){
@@ -71,7 +71,7 @@ public class JobController {
     }
 
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping("/{jobId}")
     public ResponseEntity<?> updateJobRecord(@PathVariable("jobId") Long jobId){
         Long userId= 0L;
@@ -96,7 +96,7 @@ public class JobController {
     }
 
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping("/finish/{jobId}")
     public ResponseEntity<?> finishJodb(@PathVariable("jobId") Long jobId){
 
@@ -125,7 +125,7 @@ public class JobController {
         return new ResponseEntity<>("Pekerjaan berhasil diselesaikan", HttpStatusCode.valueOf(200));
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @DeleteMapping("/delete/{jobId}")
     public ResponseEntity<?> deleteFinishedJob(@PathVariable("jobId") Long jobId){
 
