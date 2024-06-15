@@ -22,6 +22,9 @@ public class Employee {
     @Column(name = "registration_number")
     private UUID registrationNumber;
 
+    @Column(name = "employee_name")
+    private String employeeName;
+
     @Column(name = "position")
     private String position;
 
@@ -57,6 +60,14 @@ public class Employee {
 
     public void setRegistrationNumber(UUID registrationNumber) {
         this.registrationNumber = registrationNumber;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 
     public String getPosition() {
