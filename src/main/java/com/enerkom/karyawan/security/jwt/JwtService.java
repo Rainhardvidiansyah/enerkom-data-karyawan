@@ -1,17 +1,20 @@
 package com.enerkom.karyawan.security.jwt;
 
-import com.enerkom.karyawan.security.UserDetailsImpl;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.WebUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -25,48 +28,85 @@ import java.util.function.Function;
 public class JwtService {
 
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
+
     @Value("${jwt.secret.key}")
     private String key;
 
     @Value("${jwt.expiration.date}")
     private Long jwtExpiration;
 
-    @Value("${jwt.cookie.expiry}")
-    private int cookieExpiry;
+    @Value("${refresh.token.expiry.date}")
+    private Long refreshTokenExpiration;
+
 
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateRefreshToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(), userDetails, refreshTokenExpiration);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails.getUsername());
+    public String getJwtTokenFromRequest(HttpServletRequest request, String cookieName){
+        Cookie cookie = WebUtils.getCookie(request, cookieName);
+        if(cookie != null){
+            return cookie.getValue();
+        }else{
+            return null;
+        }
     }
 
-    public String buildToken(Map<String, Object> extraClaim, String userName){
-        Date date = new Date();
-        Date expirationDate = new Date(date.getTime() + cookieExpiry * 1000L);
+    public String generateAccessTokenFromRefreshToken(String token){
+        Claims claims = extractAllClaims(token);
+        String username = claims.getSubject();
+        return buildToken(new HashMap<>(), username, refreshTokenExpiration);
+
+    }
+    public boolean isRefreshTokenValid(String token){
+        return !isTokenExpired(token);
+    }
+
+
+    public String generateAccessToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails, jwtExpiration);
+    }
+
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, Long expiration) {
+        return buildToken(extraClaims, userDetails.getUsername(), expiration);
+    }
+
+    private String buildToken(Map<String, Object> extraClaim, String userName, Long expiration){
         return
                 Jwts.builder()
                         .setClaims(extraClaim)
                         .setSubject(userName)
                         .setIssuedAt(new Date(System.currentTimeMillis()))
-                        .setExpiration(expirationDate)
+                        .setExpiration(new Date(System.currentTimeMillis() + expiration))
                         .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                         .compact();
     }
 
     public Long extractUserId(String token) {
         return extractAllClaims(token).get("id", Long.class);
+    }
+
+    public String extractTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
 
@@ -103,6 +143,7 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(key);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
 
 
 }
