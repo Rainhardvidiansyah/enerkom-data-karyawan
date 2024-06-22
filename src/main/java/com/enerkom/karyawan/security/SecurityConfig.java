@@ -54,6 +54,7 @@ public class SecurityConfig{
                 .authorizeHttpRequests(req -> {
                                     req.requestMatchers("/api/v1/enerkom/auth/**").permitAll()
                                     .requestMatchers("/api/v1/enerkom/public/**").permitAll()
+                                            .requestMatchers("/api/v1/enerkom/refresh-token").permitAll()
                                     .anyRequest().authenticated();
                 })
                 .authenticationProvider(authenticationProvider())
