@@ -25,8 +25,9 @@ public class RefreshTokenController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response){
-        log.info("Mengambil token dari cookie");
+
         Cookie[] cookies = request.getCookies();
+
         if(cookies != null){
             for (Cookie cookie : cookies){
                 if("refreshToken".equals(cookie.getName())){
@@ -35,7 +36,7 @@ public class RefreshTokenController {
                     log.info("value cookie dalam metode refresh token: {}", cookie.getValue());
                     boolean isValid = jwtService.isRefreshTokenValid(refreshToken);
                     if(!isValid){
-                        return new ResponseEntity<>("Token salah", HttpStatus.UNAUTHORIZED);
+                        return new ResponseEntity<>("Refresh Token Kadaluarsa", HttpStatus.UNAUTHORIZED);
                     }else{
                         String newAccessToken = jwtService.generateAccessTokenFromRefreshToken(refreshToken);
                         return new ResponseEntity<>("Akses token yang baru: " + newAccessToken, HttpStatus.OK);
