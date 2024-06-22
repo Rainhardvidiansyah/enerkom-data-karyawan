@@ -7,15 +7,18 @@ public class AuthResponseDto {
     private String email;
     private String token;
 
+    private String refreshToken;
+
     private List<String> roles;
 
     public String getEmail() {
         return email;
     }
 
-    public AuthResponseDto(String email, String token, List<String> roles) {
+    public AuthResponseDto(String email, String token, String refreshToken, List<String> roles) {
         this.email = email;
         this.token = token;
+        this.refreshToken = refreshToken;
         this.roles = roles;
     }
 
@@ -37,5 +40,13 @@ public class AuthResponseDto {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }
