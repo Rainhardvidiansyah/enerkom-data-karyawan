@@ -3,7 +3,6 @@ package com.enerkom.karyawan.security.jwt;
 import com.enerkom.karyawan.security.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -18,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
-import java.util.Locale;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -40,40 +38,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String token = null;
+        final String authHeader = request.getHeader("Authorization");
 
-        if(request.getCookies() != null){
-            for(Cookie cookie : request.getCookies())
-                if("accessToken".equals(cookie.getName())){
-                    token = cookie.getValue();
-                }
-        }
+        logger.info("Authorization Header: {}", authHeader);
 
-        if(token == null){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.info("Authorization header is missing or does not start with Bearer");
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            if (token != null) {
-                String userName = jwtService.extractUsername(token);
+            final String jwt = authHeader.substring(7);
+            final String userEmail = jwtService.extractUsername(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
-
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
                 logger.info("User Details: {}", userDetails);
-                logger.info("Extracted Username from JWT: {}", userName.toUpperCase(Locale.ROOT));
 
-
-                if (jwtService.isTokenValid(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
-
-                    authenticationToken
-                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
                     logger.info("JWT token is valid. Authentication set in SecurityContext");
                 } else {
                     logger.info("JWT token is not valid");
