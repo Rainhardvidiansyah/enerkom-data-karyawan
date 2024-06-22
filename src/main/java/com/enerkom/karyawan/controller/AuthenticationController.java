@@ -7,10 +7,10 @@ import com.enerkom.karyawan.security.jwt.JwtService;
 import com.enerkom.karyawan.service.EmployeeService;
 import com.enerkom.karyawan.service.RegistrationService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -44,8 +44,8 @@ public class AuthenticationController {
     private JwtService jwtService;
 
 
-    @Autowired
-    private ModelMapper modelMapper;
+    @Value("${cookie.expiry.date}")
+    private Long cookieExpiry;
 
 
     @PostMapping("/registration")
@@ -74,59 +74,52 @@ public class AuthenticationController {
 
             log.info("Otoritas dalam user: {}", authentication.getAuthorities());
 
-            if (!authentication.isAuthenticated()) {
 
-                log.info("Gagal login", authentication);
-                return new ResponseEntity<>("Gagal login", HttpStatus.UNAUTHORIZED);
-
-            } else {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-                String accessToken = jwtService.generateToken(userDetails);
+                String accessToken = jwtService.generateAccessToken(userDetails);
+                String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-                ResponseCookie responseCookie = ResponseCookie.from("accessToken", accessToken)
+                ResponseCookie responseCookie = ResponseCookie.from("refreshToken", refreshToken)
                         .httpOnly(true)
                         .secure(false)
                         .path("/")
-                        .maxAge(Duration.ofSeconds(360000))
+                        .maxAge(Duration.ofSeconds(cookieExpiry))
                         .build();
 
                 List<String> roles = authentication.getAuthorities()
                         .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
-                var authResponseDto = new AuthResponseDto(userDetails.getUsername(), accessToken, roles);
+                var authResponseDto = new AuthResponseDto(userDetails.getUsername(), accessToken, refreshToken, roles);
 
-                log.info("Access token adalah: {}", accessToken);
 
                 response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
                 return new ResponseEntity<>(authResponseDto, HttpStatusCode.valueOf(200));
-            }
+
 
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("password atau email salah");
         }
-
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logOut(HttpServletResponse response){
-        ResponseCookie responseCookie = ResponseCookie.from("accessToken", "")
-               .httpOnly(true)
-               .secure(false)
-               .path("/")
-               .maxAge(Duration.ZERO)
-               .build();
 
-        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        ResponseCookie responseCookieFromRefreshToken = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ZERO)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookieFromRefreshToken.toString());
 
         return new ResponseEntity<>("Berhasil logout", HttpStatusCode.valueOf(200));
     }
-
-
-
 
 
 }
