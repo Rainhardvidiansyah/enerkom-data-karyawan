@@ -14,6 +14,9 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    //PENGGUNAAN METHOD DI BWAH INI ADALAH UNTUK:
+    //MEMASUKKAN USER KE DALAM TABLE EMPLOYEE
+    //METHOD INI DIPANGGIL DI REGISTRATION CONTROLLER
     public Employee saveEmployee(Users users){
         var employee = new Employee();
         employee.setUsers(users);
